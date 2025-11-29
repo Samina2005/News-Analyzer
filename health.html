@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NDTV Health News</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: #16213e;
+            --accent-color: #e94560;
+            --text-color: #121212;
+            --light-text: #4a4e69;
+            --background: #f5f5f5;
+            --card-bg: #ffffff;
+            --highlight: #ffd369;
+            --muted: #e0e0e0;
+            --positive: #2ecc71;
+            --negative: #e74c3c;
+            --neutral: #7f8c8d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--background);
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e0e0e0' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom: 3px solid var(--accent-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--accent-color), var(--highlight), var(--accent-color));
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .logo i {
+            color: var(--highlight);
+        }
+
+        .logo span {
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin: 0 0 20px 0;
+            padding-bottom: 15px;
+            color: var(--primary-color);
+            position: relative;
+            display: inline-block;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, var(--accent-color), var(--highlight), var(--accent-color));
+            border-radius: 3px;
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .news-section {
+            flex: 2;
+        }
+
+        .analysis-section {
+            flex: 1;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .analysis-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--muted);
+            font-size: 1.5rem;
+        }
+
+        .sentiment-stats {
+            margin-top: 20px;
+            background-color: rgba(0,0,0,0.02);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .sentiment-stats p {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .sentiment-stats strong {
+            color: var(--primary-color);
+        }
+
+        .sentiment-stats span {
+            font-weight: 500;
+            color: var(--accent-color);
+        }
+
+        .article {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .article:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .article::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(233, 69, 96, 0.05) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0.5;
+            transform: translate(30%, 30%);
+            transition: all 0.3s ease;
+        }
+
+        .article:hover::after {
+            width: 150px;
+            height: 150px;
+            opacity: 0.8;
+        }
+
+        .article-title {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+            line-height: 1.4;
+            font-family: 'Playfair Display', serif;
+            position: relative;
+        }
+
+        .positive-title {
+            color: var(--positive);
+            border-left: 3px solid var(--positive);
+            padding-left: 15px;
+        }
+
+        .negative-title {
+            color: var(--negative);
+            border-left: 3px solid var(--negative);
+            padding-left: 15px;
+        }
+
+        .neutral-title {
+            color: var(--neutral);
+            border-left: 3px solid var(--neutral);
+            padding-left: 15px;
+        }
+
+        .article-date {
+            color: var(--light-text);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            display: inline-block;
+            padding: 4px 10px;
+            background-color: rgba(0,0,0,0.03);
+            border-radius: 4px;
+        }
+
+        .article-content {
+            margin-bottom: 20px;
+            line-height: 1.7;
+            color: var(--text-color);
+            position: relative;
+            z-index: 1;
+        }
+
+        .article-link {
+            display: inline-block;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            padding: 10px 20px;
+            background: linear-gradient(to right, var(--accent-color), #ff6b6b);
+            border-radius: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .article-link:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+            transition: all 0.6s ease;
+        }
+
+        .article-link:hover {
+            background: linear-gradient(to right, #ff6b6b, var(--accent-color));
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(233, 69, 96, 0.3);
+        }
+
+        .article-link:hover:before {
+            left: 100%;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 10px;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            padding: 8px 20px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            background-color: rgba(255,255,255,0.3);
+            transform: translateX(-5px);
+        }
+
+        .back-link i {
+            margin-right: 8px;
+        }
+
+        .filter-controls {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+            justify-content: space-between;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-controls label {
+            font-weight: 500;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-controls label i {
+            color: var(--accent-color);
+        }
+
+        .filter-controls select {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--muted);
+            background-color: white;
+            color: var(--text-color);
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.95rem;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234a4e69' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
+        }
+
+        .filter-controls select:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+        }
+
+        .filter-controls button {
+            padding: 12px 25px;
+            background: linear-gradient(to right, var(--accent-color), #ff6b6b);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+            align-self: flex-end;
+            margin-top: auto;
+        }
+
+        .filter-controls button:hover {
+            background: linear-gradient(to right, #ff6b6b, var(--accent-color));
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(233, 69, 96, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--light-text);
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .loading i {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        .loading p {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .filter-status {
+            background-color: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            font-size: 0.95rem;
+            color: var(--primary-color);
+            font-weight: 500;
+            border-left: 4px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-status::before {
+            content: '\f0b0';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            margin-right: 10px;
+            color: var(--accent-color);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px 20px;
+            color: white;
+            font-size: 0.9rem;
+            background-color: var(--primary-color);
+            border-top: 3px solid var(--accent-color);
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+
+        .footer-links {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            color: var(--highlight);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-color);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .filter-controls {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 20px;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            .filter-controls button {
+                width: 100%;
+                margin-top: 15px;
+            }
+
+            .article-title {
+                font-size: 1.3rem;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-newspaper fa-2x"></i>
+            <span>NEWS ANALYZER</span>
+        </div>
+        <h1>NDTV Health News</h1>
+        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Categories</a>
+    </header>
+
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2 class="page-title">Latest Health News</h2>
+    </div>
+
+    <div class="filter-controls">
+        <div class="filter-group">
+            <label for="date-filter"><i class="fas fa-calendar-alt"></i> Filter by date:</label>
+            <select id="date-filter">
+                <option value="all">All Dates</option>
+                <!-- Date options will be populated dynamically -->
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="sentiment-filter"><i class="fas fa-smile"></i> Filter by sentiment:</label>
+            <select id="sentiment-filter">
+                <option value="all">All Sentiments</option>
+                <option value="Positive">Positive</option>
+                <option value="Negative">Negative</option>
+                <option value="Neutral">Neutral</option>
+            </select>
+        </div>
+
+        <button id="reset-filter"><i class="fas fa-sync-alt"></i> Reset Filters</button>
+    </div>
+
+    <div id="filter-status" class="filter-status">Showing all articles</div>
+
+    <div class="container">
+        <div class="news-section">
+            <div id="articles-container">
+                <!-- Articles will be loaded here -->
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading articles...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="analysis-section">
+            <h3><i class="fas fa-chart-pie"></i> Sentiment Analysis</h3>
+            <div>
+                <canvas id="sentiment-chart"></canvas>
+            </div>
+            <div class="sentiment-stats">
+                <p><strong><i class="fas fa-smile" style="color: var(--positive);"></i> Positive:</strong> <span id="positive-percent">0</span>%</p>
+                <p><strong><i class="fas fa-frown" style="color: var(--negative);"></i> Negative:</strong> <span id="negative-percent">0</span>%</p>
+                <p><strong><i class="fas fa-meh" style="color: var(--neutral);"></i> Neutral:</strong> <span id="neutral-percent">0</span>%</p>
+                <p><strong><i class="fas fa-newspaper"></i> Total Articles:</strong> <span id="total-articles">0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="logo">
+            <i class="fas fa-newspaper"></i>
+            <span>NEWS ANALYZER</span>
+        </div>
+        <p>© 2023 NDTV News Aggregator | Powered by AI Analysis</p>
+        <p>Stay informed with the latest news and sentiment analysis across various categories</p>
+        <div class="footer-links">
+            <a href="#">About</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Contact</a>
+        </div>
+    </footer>
+
+    <script>
+        // API endpoint for this category
+        const API_ENDPOINT = 'https://anshu16.pythonanywhere.com/api/healthndtv';
+        let allArticles = [];
+        let filteredArticles = [];
+
+        // Fetch articles when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchArticles();
+
+            // Add event listeners for filters
+            document.getElementById('date-filter').addEventListener('change', filterArticles);
+            document.getElementById('sentiment-filter').addEventListener('change', filterArticles);
+            document.getElementById('reset-filter').addEventListener('click', resetFilters);
+        });
+
+        // Check if a date string is in a valid format
+        function isValidDateFormat(dateString) {
+            if (!dateString) return false;
+
+            // Check for common date patterns
+            const datePatterns = [
+                /\d{1,2}\s+[A-Za-z]+\s+\d{4}/,  // "3 May 2025"
+                /[A-Za-z]+\s+\d{1,2},\s+\d{4}/,  // "May 3, 2025"
+                /\d{4}-\d{2}-\d{2}/,             // "2025-05-03"
+                /\d{2}\/\d{2}\/\d{4}/            // "05/03/2025"
+            ];
+
+            // Check if the date string matches any of the patterns
+            return datePatterns.some(pattern => pattern.test(dateString));
+        }
+
+        // Parse date for sorting and display
+        function parseDate(dateString) {
+            try {
+                // Clean the date string
+                let cleanDate = dateString.replace(/^(Updated:|Published On:|Posted on:)\s*/i, '');
+
+                // Handle NDTV's common date format with IST
+                if (cleanDate.includes('IST')) {
+                    const parts = cleanDate.split(' ');
+                    if (parts.length >= 3) {
+                        cleanDate = `${parts[0]} ${parts[1]} ${parts[2]}`;
+                    }
+                }
+
+                // Create date object
+                const date = new Date(cleanDate);
+                return date;
+            } catch (e) {
+                console.error('Error parsing date:', e);
+                return new Date(0); // Return epoch date for invalid dates
+            }
+        }
+
+        // Fetch articles from API
+        async function fetchArticles() {
+            try {
+                const response = await fetch(API_ENDPOINT);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const fetchedArticles = await response.json();
+
+                // Filter out articles with missing or invalid headlines/dates/content
+                let validArticles = fetchedArticles.filter(article => {
+                    // Skip if headline is missing
+                    if (!article.headline) return false;
+
+                    // Skip if datetime is missing
+                    if (!article.datetime_posted) return false;
+
+                    // Skip if content is missing or empty
+                    if (!article.content || article.content.trim() === '') return false;
+
+                    // Skip if datetime is actually an author name or other text
+                    const invalidDateTexts = [
+                        'NDTV Sports Desk',
+                        'Asian News International',
+                        'Press Trust of India',
+                        'Edited by',
+                        'Written by',
+                        'Reported by'
+                    ];
+
+                    for (const invalidText of invalidDateTexts) {
+                        if (article.datetime_posted.includes(invalidText)) {
+                            return false;
+                        }
+                    }
+
+                    // Skip if date format is not valid
+                    if (!isValidDateFormat(article.datetime_posted)) {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                // Remove duplicate articles by headline
+                validArticles = removeDuplicateArticles(validArticles);
+
+                // Sort articles by date in descending order (newest first)
+                allArticles = validArticles.sort((a, b) => {
+                    const dateA = parseDate(a.datetime_posted);
+                    const dateB = parseDate(b.datetime_posted);
+                    return dateB - dateA; // Descending order
+                });
+
+                // Populate date filter dropdown
+                populateDateFilter(allArticles);
+
+                // Set filtered articles to all articles initially
+                filteredArticles = [...allArticles];
+
+                // Display all articles and update sentiment analysis
+                displayArticles(filteredArticles);
+                updateSentimentAnalysis(filteredArticles);
+
+            } catch (error) {
+                console.error('Error fetching articles:', error);
+                document.getElementById('articles-container').innerHTML =
+                    '<p>Error loading articles. Please try again later. Details: ' + error.message + '</p>';
+            }
+        }
+
+        // Function to remove duplicate articles based on headline
+        function removeDuplicateArticles(articles) {
+            const uniqueHeadlines = new Set();
+            const uniqueArticles = [];
+
+            for (const article of articles) {
+                // Use headline as the unique identifier
+                if (!uniqueHeadlines.has(article.headline)) {
+                    uniqueHeadlines.add(article.headline);
+                    uniqueArticles.push(article);
+                }
+            }
+
+            return uniqueArticles;
+        }
+
+        // Populate date filter dropdown with unique dates
+        function populateDateFilter(articles) {
+            const dateFilter = document.getElementById('date-filter');
+            const uniqueDates = new Map();
+
+            // Clear existing options except the "All Dates" option
+            while (dateFilter.options.length > 1) {
+                dateFilter.remove(1);
+            }
+
+            // Get unique dates from articles
+            articles.forEach(article => {
+                const date = parseDate(article.datetime_posted);
+                if (!isNaN(date.getTime())) {
+                    // Use local date components to create a date string
+                    const year = date.getFullYear();
+                    const month = date.getMonth() + 1; // JavaScript months are 0-based
+                    const day = date.getDate();
+
+                    // Format as YYYY-MM-DD
+                    const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                    // Store with display format
+                    const displayDate = `${date.toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    })}`;
+
+                    uniqueDates.set(dateKey, displayDate);
+                }
+            });
+
+            // Sort dates in descending order
+            const sortedDates = Array.from(uniqueDates.keys()).sort().reverse();
+
+            // Add date options to dropdown
+            sortedDates.forEach(dateKey => {
+                const option = document.createElement('option');
+                option.value = dateKey;
+                option.textContent = uniqueDates.get(dateKey);
+                dateFilter.appendChild(option);
+            });
+        }
+
+        // Filter articles based on selected date and sentiment
+        function filterArticles() {
+            const selectedDate = document.getElementById('date-filter').value;
+            const selectedSentiment = document.getElementById('sentiment-filter').value;
+
+            // Start with all articles
+            let tempFilteredArticles = [...allArticles];
+
+            // Apply date filter if not "all"
+            if (selectedDate !== 'all') {
+                tempFilteredArticles = tempFilteredArticles.filter(article => {
+                    const date = parseDate(article.datetime_posted);
+                    if (isNaN(date.getTime())) return false;
+
+                    // Get date components from the article date
+                    const year = date.getFullYear();
+                    const month = date.getMonth() + 1; // JavaScript months are 0-based
+                    const day = date.getDate();
+
+                    // Format as YYYY-MM-DD for comparison
+                    const articleDateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                    // Compare with selected date
+                    return articleDateStr === selectedDate;
+                });
+            }
+
+            // Apply sentiment filter if not "all"
+            if (selectedSentiment !== 'all') {
+                tempFilteredArticles = tempFilteredArticles.filter(article => {
+                    // Handle "Neutral" case which might include "Unknown" or null values
+                    if (selectedSentiment === 'Neutral') {
+                        return article.analysis_result === 'Neutral' ||
+                               article.analysis_result === 'Unknown' ||
+                               !article.analysis_result;
+                    }
+
+                    // For Positive and Negative, do exact match
+                    return article.analysis_result === selectedSentiment;
+                });
+            }
+
+            // Update filtered articles
+            filteredArticles = tempFilteredArticles;
+
+            // Update UI
+            displayArticles(filteredArticles);
+            updateSentimentAnalysis(filteredArticles);
+
+            // Update filter status message
+            updateFilterStatus(selectedDate, selectedSentiment);
+        }
+
+        // Update filter status message
+        function updateFilterStatus(dateFilter, sentimentFilter) {
+            const statusElement = document.getElementById('filter-status');
+            if (!statusElement) return;
+
+            let message = '';
+
+            // Date filter status
+            if (dateFilter !== 'all') {
+                const dateObj = new Date(dateFilter);
+                const formattedDate = dateObj.toLocaleDateString(undefined, {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                message += `Date: ${formattedDate}`;
+            }
+
+            // Sentiment filter status
+            if (sentimentFilter !== 'all') {
+                if (message) message += ' | ';
+                message += `Sentiment: ${sentimentFilter}`;
+            }
+
+            // If no filters are applied
+            if (!message) {
+                message = 'Showing all articles';
+            } else {
+                message = 'Filtered by: ' + message;
+            }
+
+            statusElement.textContent = message;
+            statusElement.style.display = 'block';
+        }
+
+        // Reset all filters
+        function resetFilters() {
+            document.getElementById('date-filter').value = 'all';
+            document.getElementById('sentiment-filter').value = 'all';
+            filteredArticles = [...allArticles];
+            displayArticles(filteredArticles);
+            updateSentimentAnalysis(filteredArticles);
+
+            // Reset filter status
+            const statusElement = document.getElementById('filter-status');
+            if (statusElement) {
+                statusElement.textContent = 'Showing all articles';
+            }
+        }
+
+        // Display articles in the container
+        function displayArticles(articles) {
+            const container = document.getElementById('articles-container');
+
+            if (articles.length === 0) {
+                container.innerHTML = '<p>No articles found for the selected filters.</p>';
+                return;
+            }
+
+            let html = '';
+            articles.forEach(article => {
+                const sentimentClass = getSentimentTitleClass(article.analysis_result);
+
+                // Get sentiment icon
+                let sentimentIcon = '';
+                if (sentimentClass === 'positive-title') {
+                    sentimentIcon = '<i class="fas fa-smile"></i>';
+                } else if (sentimentClass === 'negative-title') {
+                    sentimentIcon = '<i class="fas fa-frown"></i>';
+                } else {
+                    sentimentIcon = '<i class="fas fa-meh"></i>';
+                }
+
+                html += `
+                <div class="article">
+                    <h3 class="article-title ${sentimentClass}">${article.headline}</h3>
+                    <p class="article-date"><i class="far fa-calendar-alt"></i> ${formatDate(article.datetime_posted)}</p>
+                    <p class="article-content">${truncateText(article.content, 200)}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <a href="${article.link}" class="article-link" target="_blank">Read full article <i class="fas fa-external-link-alt"></i></a>
+                        <span style="color: var(--light-text); font-size: 0.9rem;">Sentiment: ${sentimentIcon} ${article.analysis_result || 'Neutral'}</span>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Update sentiment analysis chart and stats
+        function updateSentimentAnalysis(articles) {
+            // Count sentiments
+            const sentiments = {
+                Positive: 0,
+                Negative: 0,
+                Neutral: 0,
+                Unknown: 0
+            };
+
+            articles.forEach(article => {
+                const sentiment = article.analysis_result || 'Unknown';
+                sentiments[sentiment] = (sentiments[sentiment] || 0) + 1;
+            });
+
+            // Calculate percentages
+            const total = articles.length;
+            const positivePercent = total ? Math.round((sentiments.Positive / total) * 100) : 0;
+            const negativePercent = total ? Math.round((sentiments.Negative / total) * 100) : 0;
+            const neutralPercent = total ? Math.round(((sentiments.Neutral + sentiments.Unknown) / total) * 100) : 0;
+
+            // Update stats display
+            document.getElementById('positive-percent').textContent = positivePercent;
+            document.getElementById('negative-percent').textContent = negativePercent;
+            document.getElementById('neutral-percent').textContent = neutralPercent;
+            document.getElementById('total-articles').textContent = total;
+
+            // Update chart
+            updateChart(sentiments);
+        }
+
+        // Create/update the pie chart
+        function updateChart(sentiments) {
+            const ctx = document.getElementById('sentiment-chart').getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (window.sentimentChart) {
+                window.sentimentChart.destroy();
+            }
+
+            // Create new chart
+            window.sentimentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Positive', 'Negative', 'Neutral'],
+                    datasets: [{
+                        data: [
+                            sentiments.Positive,
+                            sentiments.Negative,
+                            sentiments.Neutral + sentiments.Unknown
+                        ],
+                        backgroundColor: [
+                            'rgba(46, 204, 113, 0.8)', // green for positive
+                            'rgba(231, 76, 60, 0.8)',  // red for negative
+                            'rgba(149, 165, 166, 0.8)' // gray for neutral
+                        ],
+                        borderColor: [
+                            'rgba(46, 204, 113, 1)',
+                            'rgba(231, 76, 60, 1)',
+                            'rgba(149, 165, 166, 1)'
+                        ],
+                        borderWidth: 2,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: "'Roboto', sans-serif",
+                                    size: 12
+                                },
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Sentiment Distribution',
+                            font: {
+                                family: "'Playfair Display', serif",
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                bottom: 20
+                            },
+                            color: '#1a1a2e'
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(26, 26, 46, 0.8)',
+                            titleFont: {
+                                family: "'Roboto', sans-serif",
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                family: "'Roboto', sans-serif",
+                                size: 13
+                            },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: true
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true,
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        // Helper function to get sentiment title class
+        function getSentimentTitleClass(sentiment) {
+            switch(sentiment) {
+                case 'Positive': return 'positive-title';
+                case 'Negative': return 'negative-title';
+                default: return 'neutral-title';
+            }
+        }
+
+        // Helper function to format date for display
+        function formatDate(dateString) {
+            if (!dateString) return 'No date available';
+
+            try {
+                // Clean the date string
+                let cleanDate = dateString.replace(/^(Updated:|Published On:|Posted on:)\s*/i, '');
+
+                // Handle NDTV's common date format with IST
+                if (cleanDate.includes('IST')) {
+                    const parts = cleanDate.split(' ');
+                    if (parts.length >= 3) {
+                        cleanDate = `${parts[0]} ${parts[1]} ${parts[2]}`;
+                    }
+                }
+
+                // Parse the date
+                const date = new Date(cleanDate);
+
+                // Check if date is valid
+                if (isNaN(date.getTime())) {
+                    return dateString;
+                }
+
+                // Format for display
+                return date.toLocaleDateString(undefined, {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                console.error('Error formatting date:', e);
+                return dateString || 'No date available';
+            }
+        }
+
+        // Helper function to truncate text
+        function truncateText(text, maxLength) {
+            if (!text) return 'No content available';
+            return text.length > maxLength ?
+                text.substring(0, maxLength) + '...' :
+                text;
+        }
+    </script>
+</body>
+
+

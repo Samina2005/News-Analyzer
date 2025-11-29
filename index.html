@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NDTV News Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: #16213e;
+            --accent-color: #e94560;
+            --text-color: #121212;
+            --light-text: #4a4e69;
+            --background: #f5f5f5;
+            --card-bg: #ffffff;
+            --highlight: #ffd369;
+            --muted: #e0e0e0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--background);
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e0e0e0' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom: 3px solid var(--accent-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--accent-color), var(--highlight), var(--accent-color));
+        }
+
+        header h1, header p, header .logo {
+            position: relative;
+            z-index: 1;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+            font-style: italic;
+            font-weight: 300;
+        }
+
+        .current-date {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 15px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .logo {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: var(--highlight);
+        }
+
+        .logo span {
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            margin-left: 10px;
+        }
+
+
+
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin: 0 0 20px 0;
+            padding-bottom: 15px;
+            color: var(--primary-color);
+            position: relative;
+            display: inline-block;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, var(--accent-color), var(--highlight), var(--accent-color));
+            border-radius: 3px;
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 35px;
+            margin-top: 30px;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .category-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0,0,0,0.05);
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .category-card:nth-child(1) { animation-delay: 0.1s; }
+        .category-card:nth-child(2) { animation-delay: 0.2s; }
+        .category-card:nth-child(3) { animation-delay: 0.3s; }
+        .category-card:nth-child(4) { animation-delay: 0.4s; }
+        .category-card:nth-child(5) { animation-delay: 0.5s; }
+        .category-card:nth-child(6) { animation-delay: 0.6s; }
+        .category-card:nth-child(7) { animation-delay: 0.7s; }
+
+        .category-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-color: rgba(0,0,0,0);
+        }
+
+        .category-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            box-shadow: 0 0 0 2px var(--accent-color);
+            opacity: 0;
+            transition: all 0.5s ease;
+            z-index: 0;
+        }
+
+        .category-card:hover::after {
+            opacity: 0.3;
+            animation: pulse-border 1.5s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+            50% {
+                transform: scale(1.03);
+                opacity: 0.2;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+        }
+
+        .category-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .category-card:hover:before {
+            opacity: 1;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px 10px 0 0;
+            transition: all 0.3s ease;
+        }
+
+        .category-header:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, var(--accent-color) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0.2;
+            transform: translate(30%, -30%);
+            transition: all 0.5s ease;
+        }
+
+        .category-card:hover .category-header {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        }
+
+        .category-card:hover .category-header:after {
+            width: 150px;
+            height: 150px;
+            opacity: 0.3;
+            transform: translate(20%, -20%) rotate(15deg);
+        }
+
+        .category-content {
+            padding: 25px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2;
+            background-color: var(--card-bg);
+            background-image: linear-gradient(to bottom, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%);
+            box-shadow: inset 0 1px 3px rgba(255,255,255,0.9);
+            transition: all 0.3s ease;
+        }
+
+        .category-card:hover .category-content {
+            background-image: linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 100%);
+        }
+
+        .category-card h2 {
+            color: white;
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .category-card h2 i {
+            font-size: 1.2rem;
+            color: var(--highlight);
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+            transition: transform 0.3s ease;
+        }
+
+        .category-card:hover h2 i {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .category-card p {
+            color: var(--light-text);
+            margin-bottom: 25px;
+            position: relative;
+            font-size: 1rem;
+            line-height: 1.6;
+            flex-grow: 1;
+            padding: 10px 0;
+            border-bottom: 1px dashed rgba(0,0,0,0.1);
+            font-style: italic;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.9);
+            position: relative;
+        }
+
+        .category-card p strong {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-style: normal;
+            font-size: 1.05rem;
+            letter-spacing: 0.5px;
+        }
+
+        .category-card p::before {
+            content: '"';
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            opacity: 0.2;
+            position: absolute;
+            top: -15px;
+            left: -10px;
+            z-index: 0;
+        }
+
+        .category-card p::after {
+            content: '"';
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            opacity: 0.2;
+            position: absolute;
+            bottom: -30px;
+            right: -10px;
+            z-index: 0;
+        }
+
+        .category-card a {
+            display: inline-block;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            padding: 12px 24px;
+            background: linear-gradient(to right, var(--accent-color), #ff6b6b);
+            border-radius: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card a:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+            transition: all 0.6s ease;
+        }
+
+        .category-card a:hover {
+            background: linear-gradient(to right, #ff6b6b, var(--accent-color));
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(233, 69, 96, 0.3);
+        }
+
+        .category-card a:hover:before {
+            left: 100%;
+        }
+
+        .category-card a i {
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .category-card a:hover i {
+            transform: translateX(4px);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px 20px;
+            color: white;
+            font-size: 0.9rem;
+            background-color: var(--primary-color);
+            border-top: 3px solid var(--accent-color);
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+
+        .footer-links {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            color: var(--highlight);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-color);
+        }
+
+        @media (max-width: 768px) {
+            .categories {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                padding: 30px 15px;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-newspaper fa-2x"></i>
+            <span>NEWS ANALYZER</span>
+        </div>
+        <h1>NDTV News Analyzer</h1>
+        <p>Turning Headlines into insightful Knowledge</p>
+        <div class="current-date" id="current-date">Today, June 15, 2023</div>
+    </header>
+
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2 class="page-title">News Categories</h2>
+    </div>
+
+    <div class="categories">
+        <div class="category-card">
+            <div class="category-header">
+                <h2><i class="fas fa-newspaper"></i> General</h2>
+            </div>
+            <div class="category-content">
+                <p><strong>BREAKING HEADLINES</strong> and top stories from across India and the world, updated throughout the day.</p>
+                <a href="general.html">Read News <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <h2><i class="fas fa-graduation-cap"></i> Education</h2>
+            </div>
+            <div class="category-content">
+                <p><strong>EXCLUSIVE COVERAGE</strong> of education policies, exam results, and the latest academic trends and innovations.</p>
+                <a href="education.html">Read News <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <h2><i class="fas fa-heartbeat"></i> Health</h2>
+            </div>
+            <div class="category-content">
+                <p><strong>IN-DEPTH HEALTH</strong> reporting, breakthrough medical research, and essential wellness advice from trusted experts.</p>
+                <a href="health.html">Read News <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <h2><i class="fas fa-baseball-ball"></i> Cricket</h2>
+            </div>
+            <div class="category-content">
+                <p><strong>LIVE COVERAGE</strong> of cricket matches, in-depth player analysis, and exclusive tournament updates from around the globe.</p>
+                <a href="cricket.html">Read News <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <h2><i class="fas fa-flask"></i> Science</h2>
+            </div>
+            <div class="category-content">
+                <p><strong>GROUNDBREAKING DISCOVERIES</strong> in science, cutting-edge research, and revolutionary technological innovations changing our world.</p>
+                <a href="science.html">Read News <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <h2><i class="fas fa-globe-americas"></i> World</h2>
+            </div>
+            <div class="category-content">
+                <p><strong>COMPREHENSIVE COVERAGE</strong> of international events, geopolitical developments, and global affairs from our worldwide network of correspondents.</p>
+                <a href="world.html">Read News <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <h2><i class="fas fa-film"></i> Entertainment</h2>
+            </div>
+            <div class="category-content">
+                <p><strong>EXCLUSIVE INTERVIEWS</strong> and behind-the-scenes scoops on movies, celebrities, TV shows, and the latest entertainment industry buzz.</p>
+                <a href="entertainment.html">Read News <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <h2><i class="fas fa-chart-line"></i> Sentiment Trends</h2>
+            </div>
+            <div class="category-content">
+                <p><strong>VISUAL ANALYSIS</strong> of how positive, negative, and neutral news sentiment changes over time across all categories.</p>
+                <a href="trends.html">View Trends <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <template id="article-template">
+        <div class="article">
+            <h3 class="article-title"></h3>
+            <p class="article-date"></p>
+            <p class="article-content"></p>
+            <a class="article-link" target="_blank">Read more</a>
+        </div>
+    </template>
+
+    <footer>
+        <div class="logo">
+            <i class="fas fa-newspaper"></i>
+            <span>NEWS ANALYZER</span>
+        </div>
+        <p>© 2023 NDTV News Aggregator | Powered by AI Analysis</p>
+        <p>Stay informed with the latest news and sentiment analysis across various categories</p>
+        <div class="footer-links">
+            <a href="#">About</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Contact</a>
+        </div>
+    </footer>
+
+    <script>
+        // Update the current date
+        function updateCurrentDate() {
+            const dateElement = document.getElementById('current-date');
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date();
+            dateElement.textContent = today.toLocaleDateString('en-US', options);
+        }
+
+        // Run when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentDate();
+        });
+    </script>
+</body>
+</html>

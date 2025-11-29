@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NDTV News Sentiment Trends</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: #16213e;
+            --accent-color: #e94560;
+            --text-color: #121212;
+            --light-text: #4a4e69;
+            --background: #f5f5f5;
+            --card-bg: #ffffff;
+            --highlight: #ffd369;
+            --muted: #e0e0e0;
+            --positive: #2ecc71;
+            --negative: #e74c3c;
+            --neutral: #7f8c8d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--background);
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e0e0e0' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom: 3px solid var(--accent-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--accent-color), var(--highlight), var(--accent-color));
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .logo i {
+            color: var(--highlight);
+        }
+
+        .logo span {
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin: 0 0 20px 0;
+            padding-bottom: 15px;
+            color: var(--primary-color);
+            position: relative;
+            display: inline-block;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, var(--accent-color), var(--highlight), var(--accent-color));
+            border-radius: 3px;
+        }
+
+        .chart-container {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .chart-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--muted);
+            font-size: 1.5rem;
+        }
+
+        .chart-description {
+            color: var(--light-text);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 0 5px;
+            font-style: italic;
+        }
+
+        .chart-wrapper {
+            height: 400px;
+            position: relative;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 10px;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            padding: 8px 20px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            background-color: rgba(255,255,255,0.3);
+            transform: translateX(-5px);
+        }
+
+        .back-link i {
+            margin-right: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--light-text);
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .loading i {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        .loading p {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px 20px;
+            color: white;
+            font-size: 0.9rem;
+            background-color: var(--primary-color);
+            border-top: 3px solid var(--accent-color);
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+
+        .footer-links {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            color: var(--highlight);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-color);
+        }
+
+        .legend-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .positive-color {
+            background-color: rgba(46, 204, 113, 0.8);
+        }
+
+        .negative-color {
+            background-color: rgba(231, 76, 60, 0.8);
+        }
+
+        .neutral-color {
+            background-color: rgba(149, 165, 166, 0.8);
+        }
+
+        .stats-container {
+            margin: 30px auto;
+            max-width: 600px;
+        }
+
+        .stat-box {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .stat-box h4 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--muted);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+
+        .stat-label {
+            width: 80px;
+            font-weight: 500;
+            text-align: right;
+        }
+
+        .stat-bar {
+            flex-grow: 1;
+            height: 20px;
+            background-color: rgba(0,0,0,0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .stat-fill {
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .positive-fill {
+            background-color: rgba(46, 204, 113, 0.8);
+        }
+
+        .negative-fill {
+            background-color: rgba(231, 76, 60, 0.8);
+        }
+
+        .neutral-fill {
+            background-color: rgba(149, 165, 166, 0.8);
+        }
+
+        .stat-value {
+            width: 60px;
+            font-weight: 500;
+            text-align: left;
+        }
+
+        .stat-note {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--light-text);
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            header {
+                padding: 20px 15px;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .chart-wrapper {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-newspaper fa-2x"></i>
+            <span>NEWS ANALYZER</span>
+        </div>
+        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+        <h1>Sentiment Trends Over Time</h1>
+        <p>Visualizing the emotional tone of news coverage across time</p>
+    </header>
+
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2 class="page-title">News Sentiment Trends</h2>
+    </div>
+
+    <div class="chart-container">
+        <h3><i class="fas fa-chart-line"></i> Sentiment Trends Over Time</h3>
+        <p class="chart-description">This line graph shows the percentage trends of positive, negative, and neutral news articles over time. Each day's sentiment percentages add up to 100%. The chart includes all articles from all categories with valid dates.</p>
+        <div class="chart-wrapper">
+            <canvas id="sentiment-trend-chart"></canvas>
+        </div>
+        <div class="stats-container">
+            <div class="stat-box">
+                <h4>Overall Sentiment Distribution</h4>
+                <div class="stat-item">
+                    <div class="stat-label">Positive:</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill positive-fill" style="width: 91.2%"></div>
+                    </div>
+                    <div class="stat-value">91.2%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Negative:</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill negative-fill" style="width: 8.0%"></div>
+                    </div>
+                    <div class="stat-value">8.0%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Neutral:</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill neutral-fill" style="width: 0.8%"></div>
+                    </div>
+                    <div class="stat-value">0.8%</div>
+                </div>
+                <p class="stat-note">Based on 511 articles with valid dates</p>
+            </div>
+        </div>
+        <div class="legend-container">
+            <div class="legend-item">
+                <div class="legend-color positive-color"></div>
+                <span>Positive %</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color negative-color"></div>
+                <span>Negative %</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color neutral-color"></div>
+                <span>Neutral %</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="logo">
+            <i class="fas fa-newspaper"></i>
+            <span>NEWS ANALYZER</span>
+        </div>
+        <p>© 2023 NDTV News Aggregator | Powered by AI Analysis</p>
+        <p>Stay informed with the latest news and sentiment analysis across various categories</p>
+        <div class="footer-links">
+            <a href="#">About</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Contact</a>
+        </div>
+    </footer>
+
+    <script>
+        // API endpoint for sentiment trends
+        const API_ENDPOINT = 'https://anshu16.pythonanywhere.com/api/sentiment-trends';
+
+        // Fetch sentiment trend data when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchSentimentTrends();
+        });
+
+        // Fetch sentiment trend data from API
+        async function fetchSentimentTrends() {
+            try {
+                const response = await fetch(API_ENDPOINT);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    createTrendChart(data);
+                } else {
+                    showError('No trend data available');
+                }
+            } catch (error) {
+                console.error('Error fetching sentiment trends:', error);
+                showError('Failed to load sentiment trend data');
+            }
+        }
+
+        // Create the trend chart
+        function createTrendChart(data) {
+            // Filter out any invalid data points
+            data = data.filter(item => {
+                return item && item.date &&
+                       !isNaN(item.positive) &&
+                       !isNaN(item.negative) &&
+                       !isNaN(item.neutral) &&
+                       item.total_articles > 0;
+            });
+
+            // Sort data by date
+            data.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            console.log(`Rendering chart with ${data.length} data points`);
+
+            // Extract dates and sentiment counts
+            const dates = data.map(item => formatDate(item.date));
+            const positiveData = data.map(item => item.positive);
+            const negativeData = data.map(item => item.negative);
+            const neutralData = data.map(item => item.neutral);
+
+            // Calculate total articles
+            const totalArticles = data.reduce((sum, item) => sum + item.total_articles, 0);
+            console.log(`Total articles in chart: ${totalArticles}`);
+
+            // Update the stats display with the actual data from the API
+            updateStatsDisplay(data);
+
+            // Get the chart canvas
+            const ctx = document.getElementById('sentiment-trend-chart').getContext('2d');
+
+            // Create the chart
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Positive %',
+                            data: positiveData,
+                            borderColor: 'rgba(46, 204, 113, 1)',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Negative %',
+                            data: negativeData,
+                            borderColor: 'rgba(231, 76, 60, 1)',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Neutral %',
+                            data: neutralData,
+                            borderColor: 'rgba(149, 165, 166, 1)',
+                            backgroundColor: 'rgba(149, 165, 166, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + '%';
+                                    }
+                                    return label;
+                                },
+                                footer: function(tooltipItems) {
+                                    // Get the total articles for this date
+                                    const index = tooltipItems[0].dataIndex;
+                                    const totalArticles = data[index].total_articles;
+                                    return 'Total Articles: ' + totalArticles;
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'News Sentiment Distribution Over Time',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                font: {
+                                    weight: 'bold'
+                                },
+                                padding: {
+                                    top: 10
+                                }
+                            }
+                        },
+                        y: {
+                            stacked: false,  // Not a stacked chart
+                            beginAtZero: true,
+                            max: 100, // Set max to 100%
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                stepSize: 20,
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Percentage of Articles (%)',
+                                font: {
+                                    weight: 'bold'
+                                },
+                                padding: {
+                                    bottom: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // Show error message
+        function showError(message) {
+            const chartContainer = document.querySelector('.chart-wrapper');
+            chartContainer.innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        // Update stats display with actual data from API
+        function updateStatsDisplay(data) {
+            // Calculate total articles
+            const totalArticles = data.reduce((sum, item) => sum + item.total_articles, 0);
+
+            // Calculate overall sentiment counts
+            let totalPositive = 0;
+            let totalNegative = 0;
+            let totalNeutral = 0;
+
+            data.forEach(item => {
+                // Calculate raw counts based on percentages and total
+                const positiveCount = Math.round(item.positive * item.total_articles / 100);
+                const negativeCount = Math.round(item.negative * item.total_articles / 100);
+                const neutralCount = item.total_articles - positiveCount - negativeCount;
+
+                totalPositive += positiveCount;
+                totalNegative += negativeCount;
+                totalNeutral += neutralCount;
+            });
+
+            // Calculate percentages
+            const positivePct = totalArticles > 0 ? (totalPositive / totalArticles * 100).toFixed(1) : 0;
+            const negativePct = totalArticles > 0 ? (totalNegative / totalArticles * 100).toFixed(1) : 0;
+            const neutralPct = totalArticles > 0 ? (totalNeutral / totalArticles * 100).toFixed(1) : 0;
+
+            // Update the DOM
+            document.querySelector('.positive-fill').style.width = `${positivePct}%`;
+            document.querySelector('.negative-fill').style.width = `${negativePct}%`;
+            document.querySelector('.neutral-fill').style.width = `${neutralPct}%`;
+
+            document.querySelectorAll('.stat-value')[0].textContent = `${positivePct}%`;
+            document.querySelectorAll('.stat-value')[1].textContent = `${negativePct}%`;
+            document.querySelectorAll('.stat-value')[2].textContent = `${neutralPct}%`;
+
+            document.querySelector('.stat-note').textContent = `Based on ${totalArticles} articles with valid dates`;
+        }
+    </script>
+</body>
+</html>
